@@ -25,6 +25,7 @@
 </template>
 
 <script>
+import { ref, computed, onMounted, watch } from "vue";
 const SpeechRecognition = window.SpeechRecognition || webkitSpeechRecognition; // eslint-disable-line
 const recognition = new SpeechRecognition();
 recognition.continuous = true;
@@ -32,56 +33,59 @@ recognition.lang = "en-US";
 recognition.interimResults = true;
 recognition.maxAlternatives = 2;
 export default {
-  data() {
-    return {
-      videoUrl: "",
-      showHint: true,
-      videoText: "",
-    };
-  },
-  computed: {
-    reshapeVideoUrl() {
-      const getYouTubeVideoId = this.videoUrl.substring(
-        this.videoUrl.indexOf("=") + 1
+  setup() {
+    const videoUrl = ref("");
+    const showHint = ref(true);
+    const videoText = ref("");
+
+    const reshapeVideoUrl = computed(() => {
+      const getYouTubeVideoId = videoUrl.value.substring(
+        videoUrl.value.indexOf("=") + 1
       );
-      // console.log("getYouTubeVideoId", getYouTubeVideoId);
       return `https://www.youtube.com/embed/${getYouTubeVideoId}`;
-    },
-  },
-  methods: {
-    initRecognition() {
+    });
+
+    const initRecognition = () => {
       recognition.start();
-    },
-    getRecognitionResult() {
+    };
+
+    const getRecognitionResult = () => {
       recognition.onresult = (e) => {
-        this.videoText = e.results[0][0].transcript;
-        console.log("result123", this.videoText);
+        videoText.value = e.results[0][0].transcript;
+        console.log("result123", videoText.value);
       };
-    },
-    checkIfRecognitionDisributed() {
-      recognition.onsoundend = () => this.initRecognition();
-      recognition.onaudioend = () => this.initRecognition();
-      recognition.onspeechend = () => this.initRecognition();
-    },
-    checkIfRecognitionStarted() {
-      recognition.onsoundstart = () => this.getRecognitionResult();
-      recognition.onaudiostart = () => this.getRecognitionResult();
-      recognition.onspeechstart = () => this.getRecognitionResult();
-    },
-  },
-  mounted() {
-    setInterval(() => {
-      this.checkIfRecognitionDisributed();
-      this.checkIfRecognitionStarted();
-    }, 1000);
-  },
-  watch: {
-    // eslint-disable-next-line
-    videoUrl(url, oldurl) {
+    };
+
+    const checkIfRecognitionDisributed = () => {
+      recognition.onsoundend = () => initRecognition();
+      recognition.onaudioend = () => initRecognition();
+      recognition.onspeechend = () => initRecognition();
+    };
+
+    const checkIfRecognitionStarted = () => {
+      recognition.onsoundstart = () => getRecognitionResult();
+      recognition.onaudiostart = () => getRecognitionResult();
+      recognition.onspeechstart = () => getRecognitionResult();
+    };
+
+    onMounted(() => {
+      setInterval(() => {
+        checkIfRecognitionDisributed();
+        checkIfRecognitionStarted();
+      }, 1000);
+    });
+
+    watch(videoUrl, (url) => {
       if (url.trim().length > 0) {
-        this.initRecognition();
+        initRecognition();
       }
-    },
+    });
+    return {
+      videoUrl,
+      showHint,
+      videoText,
+      reshapeVideoUrl,
+    };
   },
 };
 </script>
