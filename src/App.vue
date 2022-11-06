@@ -3,7 +3,11 @@
     <h1 class="title">FindX, A Vue.JS app based on NLP</h1>
     <h4 v-if="showHint">Please allow mircophone!</h4>
     <div class="input">
-      <input v-model="videoUrl" placeholder="enter youtube video url" />
+      <a-input-search
+        v-model:value="videoUrl"
+        placeholder="enter youtube video url"
+        :loading="inputLoading"
+      />
       <!-- <video v-if="videoUrl.trim().length > 0" id="video" controls>
         <source :src="reshapeVideoUrl" />
         <track
@@ -37,6 +41,7 @@ export default {
     const videoUrl = ref("");
     const showHint = ref(true);
     const videoText = ref("");
+    const inputLoading = ref(false);
 
     const reshapeVideoUrl = computed(() => {
       const getYouTubeVideoId = videoUrl.value.substring(
@@ -77,14 +82,28 @@ export default {
 
     watch(videoUrl, (url) => {
       if (url.trim().length > 0) {
+        inputLoading.value = true;
         initRecognition();
+        showHint.value = false;
+        console.log("123", url);
       }
     });
+
+    watch(reshapeVideoUrl, (val) => {
+      if (val.length > 0) {
+        setTimeout(() => {
+          inputLoading.value = false;
+        }, 2000);
+        console.log("123", val);
+      }
+    });
+
     return {
       videoUrl,
       showHint,
       videoText,
       reshapeVideoUrl,
+      inputLoading,
     };
   },
 };
@@ -114,10 +133,11 @@ body {
   align-items: center;
   margin-top: 15px;
 }
-input {
-  width: 300px;
-  height: 40px;
+
+.ant-input-search {
+  width: 400px !important;
 }
+
 video {
   width: 800px;
   height: 400px;
