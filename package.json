@@ -8,6 +8,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "ant-design-vue": "^3.2.13",
     "core-js": "^3.8.3",
     "natural": "^5.2.3",
     "video.js": "^7.20.2",
